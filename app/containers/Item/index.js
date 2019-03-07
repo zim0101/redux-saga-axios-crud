@@ -21,14 +21,29 @@ import messages from './messages';
 
 import { Link } from 'react-router-dom';
 import Banner from '../../components/Banner';
-import { deleteItemAction, editItemAction, addItemAction, sortItemsAction } from './actions';
+import { deleteItemAction, editItemAction, addItemAction, sortItemsAction, loadItemsAction, sendSearchKeywordsAction, sendPriceRangeAction } from './actions';
 import { Button, Form, FormGroup, Label, Input, FormText } from 'reactstrap';
 import { Table } from 'reactstrap';
 import { Jumbotron } from 'reactstrap';
+import InputRange from 'react-input-range';
+import 'react-input-range/lib/css/index.css';
 // import {uniqid} from 'uniqid';
 
 var uniqid = require('uniqid');
 /* eslint-disable react/prefer-stateless-function */
+
+const appBackgroundStyle = {
+  backgroundColor: '#0a0e14'
+};
+
+const midAppBackgroundStyle = {
+  backgroundColor: '#1c2128'
+};
+
+const textStyle = {
+  color: 'white'
+};
+
 export class Item extends React.Component {
 
   constructor () {
@@ -48,7 +63,10 @@ export class Item extends React.Component {
       product_ascending: false,
       price_ascending: false,
       quantity_ascending: false,
-      sortedBy: ''
+      sortedBy: '',
+      keywords: '',
+      search_type: '',
+      price_range: {min: 0, max:10}
     }
   }
 
@@ -61,15 +79,15 @@ export class Item extends React.Component {
   }
 
   handleDelete = (e) => {
-    console.log("INSPECT DELETE_ITEM: ", e.target.value);
+    // console.log("INSPECT DELETE_ITEM: ", e.target.value);
     this.props.deleteItem(e.target.value);
   }
 
   handleEditFormViewChange = (e) => {
     e.preventDefault();
     this.setState({viewEditForm: true});
-    console.log(this.state.viewEditForm);
-    console.log(this.props.item.item);
+    // console.log(this.state.viewEditForm);
+    // console.log(this.props.item.item);
     this.props.item.item.map((i) => {
       if(e.target.value == i.id) {
         this.setState({
@@ -111,7 +129,7 @@ export class Item extends React.Component {
       slug: this.state.slug
     }
 
-    console.log("handleEditSubmit data: ", data);
+    // console.log("handleEditSubmit data: ", data);
 
     this.props.editItem(data);
   }
@@ -183,14 +201,14 @@ export class Item extends React.Component {
     // generate slug:
     if(!this.props.item.item.length) {
       var slug = uniqid();
-      console.log("UNIQID: ", slug);
-      console.log("No item");
+      // console.log("UNIQID: ", slug);
+      // console.log("No item");
     } else {
-      console.log("got items");
+      // console.log("got items");
       do {
         var status = true;
         var slug = uniqid();
-        console.log(slug);
+        // console.log(slug);
         this.props.item.item.map((element) => {
           if(element.slug === slug) {
             status = true;
@@ -198,6 +216,8 @@ export class Item extends React.Component {
             status = false;
           }
         });
+
+
 
         if(status) {
           continue;
@@ -216,7 +236,7 @@ export class Item extends React.Component {
     }
 
     var response = this.props.addItem(data);
-    console.log(response);
+    // console.log(response);
   }
 
   handleNameSort = (e) => {
@@ -232,9 +252,6 @@ export class Item extends React.Component {
     }
 
     this.props.sortItems(data);
-    console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-    console.log(this.state.product_ascending, this.state.price_ascending, this.state.quantity_ascending);
-    console.log(data);
   }
 
   handlePriceSort = (e) => {
@@ -250,10 +267,6 @@ export class Item extends React.Component {
     }
 
     this.props.sortItems(data);
-
-    console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-    console.log(this.state.product_ascending, this.state.price_ascending, this.state.quantity_ascending);
-    console.log(data);
   }
 
   handleQuantitySort = (e) => {
@@ -269,10 +282,30 @@ export class Item extends React.Component {
     }
 
     this.props.sortItems(data);
+  }
 
-    console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-    console.log(this.state.product_ascending, this.state.price_ascending, this.state.quantity_ascending);
-    console.log(data);
+  test_function = () => {
+    this.props.loadItems();
+  }
+
+  handleKeywordsChange = (e) => {
+    this.setState({keywords: e.target.value});
+    this.setState({search_type: 'name'});
+    
+    // console.log(this.state.keywords.length);
+    if(this.state.keywords.length > 1) {
+      // console.log("length > 1")
+      setTimeout(() => {
+        let data = {
+          keywords: this.state.keywords,
+          type: this.state.search_type,
+          min: this.state.price_range.min,
+          max: this.state.price_range.max,
+        }
+        this.props.sendSearchKeywords(data);
+        // console.log("executed");
+      }, 1000);
+    }
   }
 
   renderItems = () => {
@@ -286,11 +319,11 @@ export class Item extends React.Component {
           
             <tr key={key}>
               
-              <th scope="row">{key}</th>
-              <td>{data.name}</td>
-              <td>{data.price}</td>
-              <td>{data.quantity}</td>
-              <td>
+              <th style={textStyle} scope="row">{key}</th>
+              <td style={textStyle}>{data.name}</td>
+              <td style={textStyle}>{data.price}</td>
+              <td style={textStyle}>{data.quantity}</td>
+              <td >
                 <Button outline color="primary" value={data.id} onClick={this.handleEditFormViewChange} >Edit</Button>
               </td>
               <td>
@@ -310,14 +343,14 @@ export class Item extends React.Component {
   render() {
 
     return (
-      <div>
+      <div style={textStyle}>
         <Helmet>
           <title>Item</title>
           <meta name="description" content="Description of Item" />
         </Helmet>
         <Banner />
         
-        <Jumbotron>
+        <Jumbotron style={appBackgroundStyle}>
           
           <Button outline color="info" >
             <Link to="/" >Home</Link>
@@ -326,8 +359,8 @@ export class Item extends React.Component {
             Logout
           </Button>
 
-          <Jumbotron>
-            <h2>Add Item</h2>
+          <Jumbotron style={midAppBackgroundStyle}>
+            <h2 style={textStyle}>Add Item</h2>
             <div>
               <Form onSubmit={this.handleAddItemSubmit} >
                 <div className="row">
@@ -355,22 +388,39 @@ export class Item extends React.Component {
             </div>
             <br></br>
             <br></br>
-            <h2>Items</h2>
+            <div className="row">
+              <div className="col-md-2">
+                <h2>Items</h2>
+              </div>
+              <div className="col-md-4">
+                <Input type="text" name="keywords" placeholder="Search" value={this.state.keywords} onChange={this.handleKeywordsChange} />
+              </div>
+              <div className="col-md-6">
+                <InputRange
+                  maxValue={100}
+                  minValue={0}
+                  value={this.state.price_range}
+                  onChange={price_range => this.setState({ price_range })}
+                  onChangeComplete={price_range => {this.props.sendPriceRange(price_range)}} /> 
+                <hr></hr>
+                <h6 className="text-center">Price Range</h6>
+              </div>
+            </div>
             
 
             <div>
               {this.state.viewEditForm ? this.editForm() : ''}
             </div>
-            <div>
+            <div >
               <Table>
                 <thead>
                   <tr>
-                    <th>#</th>
-                    <th>Product {this.state.product_ascending ? <Button outline color="info" size="sm" value="name" onClick={this.handleNameSort}>DSC</Button> : <Button outline color="info" size="sm" value="name" onClick={this.handleNameSort} >ASC</Button>}</th>
-                    <th>Price {this.state.price_ascending ? <Button outline color="info" size="sm" value="price" onClick={this.handlePriceSort}>DSC</Button> : <Button outline color="info" size="sm" value="price" onClick={this.handlePriceSort} >ASC</Button>}</th>
-                    <th>Quantity {this.state.quantity_ascending ? <Button outline color="info" size="sm" value="quantity" onClick={this.handleQuantitySort}>DSC</Button> : <Button outline color="info" size="sm" value="quantity" onClick={this.handleQuantitySort} >ASC</Button>}</th>
-                    <th>Edit</th>
-                    <th>Delete</th>
+                    <th style={textStyle}>#</th>
+                    <th style={textStyle}>Product {this.state.product_ascending ? <Button outline color="info" size="sm" value="name" onClick={this.handleNameSort}>DSC</Button> : <Button outline color="info" size="sm" value="name" onClick={this.handleNameSort} >ASC</Button>}</th>
+                    <th style={textStyle}>Price {this.state.price_ascending ? <Button outline color="info" size="sm" value="price" onClick={this.handlePriceSort}>DSC</Button> : <Button outline color="info" size="sm" value="price" onClick={this.handlePriceSort} >ASC</Button>}</th>
+                    <th style={textStyle}>Quantity {this.state.quantity_ascending ? <Button outline color="info" size="sm" value="quantity" onClick={this.handleQuantitySort}>DSC</Button> : <Button outline color="info" size="sm" value="quantity" onClick={this.handleQuantitySort} >ASC</Button>}</th>
+                    <th style={textStyle}>Edit</th>
+                    <th style={textStyle}>Delete</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -402,7 +452,10 @@ function mapDispatchToProps(dispatch) {
     deleteItem: (slug) => dispatch(deleteItemAction(slug)),
     editItem: (data) => dispatch(editItemAction(data)),
     addItem: (data) => dispatch(addItemAction(data)),
-    sortItems: (data) => dispatch(sortItemsAction(data))
+    sortItems: (data) => dispatch(sortItemsAction(data)),
+    loadItems: (data) => dispatch(loadItemsAction(data)),
+    sendSearchKeywords: (data) => dispatch(sendSearchKeywordsAction(data)),
+    sendPriceRange: (data) => dispatch(sendPriceRangeAction(data))
   };
 }
 

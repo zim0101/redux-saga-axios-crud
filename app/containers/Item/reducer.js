@@ -5,7 +5,7 @@
  */
 
 import { fromJS } from 'immutable';
-import { DEFAULT_ACTION, LOAD_ITEMS, DELETE_ITEM, ADD_ITEM, EDIT_ITEM } from './constants';
+import { DEFAULT_ACTION, LOAD_ITEMS, DELETE_ITEM, ADD_ITEM, EDIT_ITEM, SORT_ITEMS_2 } from './constants';
 
 export const initialState = fromJS({
   item: []
@@ -18,12 +18,18 @@ function itemReducer(state = initialState, action) {
     }
       
     case LOAD_ITEMS: {
+      // console.log("load_item", action);
+      return state.set('item', action.data);
+    }
+
+    case SORT_ITEMS_2: {
+      // console.log("sort_item>>>>>>>>>>", action);
       return state.set('item', action.data);
     }
 
     case ADD_ITEM: {
       const item = fromJS(state.get('item'));
-      console.log(action);
+      // console.log(action);
 
       var selected_item = {
         id: action.data.id,
@@ -40,7 +46,7 @@ function itemReducer(state = initialState, action) {
 
     case DELETE_ITEM: {
 
-      console.log("Inside Reducer: DELETE_ITEM");
+      // console.log("Inside Reducer: DELETE_ITEM");
       const item = fromJS(state.get('item'));
       for (const key in item.toJS()) {
         if (item.toJS()[key].slug == action.slug) {
@@ -51,9 +57,9 @@ function itemReducer(state = initialState, action) {
     }
 
     case EDIT_ITEM: {
-      console.log("Inside Item reducer");
+      // console.log("Inside Item reducer");
       const item = fromJS(state.get('item'));
-      console.log(action);
+      // console.log(action);
 
       var selected_item = {
         id: action.data.id,
@@ -62,7 +68,7 @@ function itemReducer(state = initialState, action) {
         quantity: action.data.quantity
       }
       for (const key in item.toJS()) {
-        console.log(item.toJS()[key].name, item.toJS()[key].price, item.toJS()[key].quantity);
+        // console.log(item.toJS()[key].name, item.toJS()[key].price, item.toJS()[key].quantity);
         if (item.toJS()[key].id == action.data.id) {
           const item = fromJS(state.get('item'));
           return state.set('item', item.unshift(selected_item));
@@ -70,6 +76,8 @@ function itemReducer(state = initialState, action) {
       }
       return state;
     }
+
+    
 
     default:
       return state;
